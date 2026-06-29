@@ -2,8 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BACKEND_HOST="${BACKEND_HOST:-0.0.0.0}"
 BACKEND_PORT="${BACKEND_PORT:-3000}"
-FRONTEND_HOST="${FRONTEND_HOST:-127.0.0.1}"
+FRONTEND_HOST="${FRONTEND_HOST:-0.0.0.0}"
 FRONTEND_PORT="${FRONTEND_PORT:-5173}"
 
 backend_pid=""
@@ -25,10 +26,10 @@ cleanup() {
 
 trap cleanup INT TERM EXIT
 
-echo "Starting Rails API on http://127.0.0.1:${BACKEND_PORT}"
+echo "Starting Rails API on http://${BACKEND_HOST}:${BACKEND_PORT}"
 (
   cd "$ROOT_DIR/backend"
-  ./bin/rails server -p "$BACKEND_PORT"
+  ./bin/rails server -b "$BACKEND_HOST" -p "$BACKEND_PORT"
 ) &
 backend_pid=$!
 

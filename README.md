@@ -20,7 +20,7 @@ bundle install
 cp .env.example .env
 rails db:prepare
 rails db:seed
-rails server -p 3001
+rails server -p 3000
 ```
 
 Database connection is configured in `backend/config/database.yml`, with local values loaded from `backend/.env`. You can also use `DATABASE_URL` if you prefer a single PostgreSQL URL.
@@ -49,6 +49,12 @@ After setup, start the backend and frontend together from the project root:
 
 ```sh
 ./bin/dev
+```
+
+Stop both dev servers:
+
+```sh
+./bin/stop-dev
 ```
 
 ## Useful Commands

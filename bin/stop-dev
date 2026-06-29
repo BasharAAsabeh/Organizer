@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+BACKEND_PORT="${BACKEND_PORT:-3000}"
+FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+
+echo "Stopping Organizer dev servers..."
+
+if command -v fuser >/dev/null 2>&1; then
+  fuser -k "${BACKEND_PORT}/tcp" 2>/dev/null || true
+  fuser -k "${FRONTEND_PORT}/tcp" 2>/dev/null || true
+fi
+
+pkill -f "vite --host .* --port ${FRONTEND_PORT}" 2>/dev/null || true
+pkill -f "rails server .* -p ${BACKEND_PORT}" 2>/dev/null || true
+pkill -f "puma .*tcp://.*:${BACKEND_PORT}" 2>/dev/null || true
+
+echo "Stopped ports ${BACKEND_PORT} and ${FRONTEND_PORT}."

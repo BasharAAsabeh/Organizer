@@ -20,7 +20,7 @@ export function Layout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900">
+    <div className="min-h-screen bg-slate-950 text-slate-100">
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-[150px] border-r border-slate-200 bg-white/80 px-3 py-5 backdrop-blur md:block">
         <Brand />
         <nav className="mt-6 space-y-2">

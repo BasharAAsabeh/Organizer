@@ -17,6 +17,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html,
+#root {
+  min-height: 100%;
+  background: #020617;
+}
+
 h1,
 h2,
 h3,

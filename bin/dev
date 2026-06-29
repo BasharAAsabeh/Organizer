@@ -3,9 +3,10 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKEND_HOST="${BACKEND_HOST:-0.0.0.0}"
-BACKEND_PORT="${BACKEND_PORT:-3000}"
+BACKEND_PORT="${BACKEND_PORT:-3001}"
 FRONTEND_HOST="${FRONTEND_HOST:-0.0.0.0}"
 FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+PID_FILE="$ROOT_DIR/tmp/dev.pid"
 
 backend_pid=""
 frontend_pid=""
@@ -34,6 +35,7 @@ cleanup() {
   fi
 
   wait 2>/dev/null || true
+  rm -f "$PID_FILE"
 }
 
 trap cleanup INT TERM EXIT
@@ -63,6 +65,9 @@ echo "Starting Vite frontend on http://${FRONTEND_HOST}:${FRONTEND_PORT}"
   npm run dev -- --host "$FRONTEND_HOST" --port "$FRONTEND_PORT" --strictPort
 ) &
 frontend_pid=$!
+
+mkdir -p "$(dirname "$PID_FILE")"
+printf "%s\n%s\n%s\n" "$$" "$backend_pid" "$frontend_pid" > "$PID_FILE"
 
 while kill -0 "$backend_pid" 2>/dev/null && kill -0 "$frontend_pid" 2>/dev/null; do
   sleep 1

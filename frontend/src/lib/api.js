@@ -15,7 +15,7 @@ function apiBaseURL() {
     return configuredURL
   }
 
-  return `${window.location.protocol}//${window.location.hostname}:3000/api`
+  return `${window.location.protocol}//${window.location.hostname}:3001/api`
 }
 
 export const api = axios.create({

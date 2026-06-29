@@ -1,18 +1,63 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BACKEND_PORT="${BACKEND_PORT:-3000}"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BACKEND_PORT="${BACKEND_PORT:-3001}"
 FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+PID_FILE="$ROOT_DIR/tmp/dev.pid"
 
 echo "Stopping Organizer dev servers..."
 
-if command -v fuser >/dev/null 2>&1; then
-  fuser -k "${BACKEND_PORT}/tcp" 2>/dev/null || true
-  fuser -k "${FRONTEND_PORT}/tcp" 2>/dev/null || true
+port_in_use() {
+  local port="$1"
+
+  if command -v ss >/dev/null 2>&1; then
+    ss -ltn "sport = :${port}" | grep -q ":${port}"
+  elif command -v lsof >/dev/null 2>&1; then
+    lsof -iTCP:"${port}" -sTCP:LISTEN -t >/dev/null
+  else
+    return 1
+  fi
+}
+
+kill_port() {
+  local port="$1"
+
+  if command -v fuser >/dev/null 2>&1; then
+    fuser -k "${port}/tcp" 2>/dev/null || true
+  fi
+}
+
+if [[ -f "$PID_FILE" ]]; then
+  while read -r pid; do
+    if [[ -n "$pid" ]]; then
+      kill "$pid" 2>/dev/null || true
+    fi
+  done < "$PID_FILE"
 fi
 
-pkill -f "vite --host .* --port ${FRONTEND_PORT}" 2>/dev/null || true
-pkill -f "rails server .* -p ${BACKEND_PORT}" 2>/dev/null || true
-pkill -f "puma .*tcp://.*:${BACKEND_PORT}" 2>/dev/null || true
+for _ in 1 2 3 4 5; do
+  kill_port "$BACKEND_PORT"
+  kill_port "$FRONTEND_PORT"
 
-echo "Stopped ports ${BACKEND_PORT} and ${FRONTEND_PORT}."
+  pkill -9 -f "vite --host .* --port ${FRONTEND_PORT}" 2>/dev/null || true
+  pkill -9 -f "node .*vite.*--port ${FRONTEND_PORT}" 2>/dev/null || true
+  pkill -9 -f "rails server .* -p ${BACKEND_PORT}" 2>/dev/null || true
+  pkill -9 -f "puma .*tcp://.*:${BACKEND_PORT}" 2>/dev/null || true
+
+  sleep 1
+
+  if ! port_in_use "$BACKEND_PORT" && ! port_in_use "$FRONTEND_PORT"; then
+    rm -f "$PID_FILE"
+    echo "Stopped ports ${BACKEND_PORT} and ${FRONTEND_PORT}."
+    exit 0
+  fi
+done
+
+echo "One or more ports are still in use:"
+if command -v ss >/dev/null 2>&1; then
+  ss -ltnp "sport = :${BACKEND_PORT}" || true
+  ss -ltnp "sport = :${FRONTEND_PORT}" || true
+fi
+
+exit 1

@@ -44,4 +44,5 @@ while kill -0 "$backend_pid" 2>/dev/null && kill -0 "$frontend_pid" 2>/dev/null;
   sleep 1
 done
 
-wait "$backend_pid" "$frontend_pid"
+cleanup
+exit 1

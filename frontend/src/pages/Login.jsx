@@ -40,7 +40,6 @@ export function Login() {
           </div>
 
           <h2 className="text-2xl font-black">{mode === 'login' ? 'Welcome back' : 'Create account'}</h2>
-          <p className="mt-1 text-sm font-bold text-slate-500">Use the seeded demo after setup: bashar@example.com / password123.</p>
           <div className="mt-5"><ErrorState message={authError} /></div>
 
           <div className="space-y-4">

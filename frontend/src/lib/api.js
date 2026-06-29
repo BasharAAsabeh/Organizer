@@ -1,7 +1,25 @@
 import axios from 'axios'
 
+function apiBaseURL() {
+  const configuredURL = import.meta.env.VITE_API_BASE_URL
+
+  if (configuredURL) {
+    const url = new URL(configuredURL)
+    const localHosts = ['localhost', '127.0.0.1', '0.0.0.0']
+
+    if (localHosts.includes(url.hostname) && !localHosts.includes(window.location.hostname)) {
+      url.hostname = window.location.hostname
+      return url.toString()
+    }
+
+    return configuredURL
+  }
+
+  return `${window.location.protocol}//${window.location.hostname}:3000/api`
+}
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
+  baseURL: apiBaseURL(),
 })
 
 api.interceptors.request.use((config) => {
